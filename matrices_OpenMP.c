@@ -29,12 +29,14 @@ void print_matrix(double *M, int rows, int cols) {
 
 /* Multiplicación de matrices: C = A * B */
 void mult(double *A, double *B, double *C, int m, int k, int n) {
-    #pragma omp for collapse(3)
+    #pragma omp for schedule(dynamic) collapse(2)
     for (int i = 0; i < m; i++) {
         for (int j = 0; j < n; j++) {
+            double sum=0;
             for (int l = 0; l < k; l++) {
-                C[i * n + j] += A[i * k + l] * B[l * n + j];
+                sum += A[i * k + l] * B[l * n + j];
             }
+            C[i * n + j] = sum;
         }
     }
 }
@@ -43,7 +45,7 @@ void mult(double *A, double *B, double *C, int m, int k, int n) {
 
 /* Suma de matrices: C = A + B */
 void sum_matrix(double *A, double *B, double *C, int rows, int cols) {
-    #pragma omp for collapse(2)
+    #pragma omp for schedule(dynamic) collapse(2) 
     for (int i = 0; i < rows; i++)
         for (int j = 0; j < cols; j++)
             C[i * cols + j] = A[i * cols + j] + B[i * cols + j];
@@ -53,7 +55,7 @@ void sum_matrix(double *A, double *B, double *C, int rows, int cols) {
 
 int main(int argc, char **argv) {
     int dim, n_threads;
-    float t_start,t_end,timetotal, time_mult1, time_mult2, time_sum;
+    double t_start, t_end, time_mult1, time_mult2, time_sum;
 
     dim = atoi(argv[1]);
     n_threads = atoi(argv[2]);
@@ -110,5 +112,5 @@ int main(int argc, char **argv) {
         printf("Matrix E = D + C:\n");
         print_matrix(E, dim, dim);
     }
-    
+
 }
